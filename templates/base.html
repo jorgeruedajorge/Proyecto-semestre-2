@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TechStore{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <a class="logo" href="{{ url_for('inicio') }}">
+        ⚡ TechStore
+    </a>
+
+    <nav>
+
+        <a href="{{ url_for('inicio') }}">
+            🏠 Inicio
+        </a>
+
+        <a href="{{ url_for('catalogo') }}">
+            🛍️ Catálogo
+        </a>
+
+        <a href="{{ url_for('catalogo') }}#categorias">
+            📂 Categorías
+        </a>
+
+        <a href="{{ url_for('carrito') }}" class="carrito-nav">
+            🛒 Carrito
+            <span class="carrito-contador">{{ cantidad_carrito }}</span>
+        </a>
+
+        {% if session.get('usuario_id') %}
+
+            {% if session.get('es_admin') %}
+                <a href="{{ url_for('admin_productos') }}" class="nav-admin">
+                    ⚙️ Administración
+                </a>
+
+                <a href="{{ url_for('nuevo_producto') }}" class="nav-register">
+                    ➕ Registrar producto
+                </a>
+            {% endif %}
+
+            <a href="{{ url_for('logout') }}" class="nav-logout">
+                🚪 Cerrar sesión
+            </a>
+
+        {% else %}
+
+            <a href="{{ url_for('login') }}" class="nav-login">
+                🔐 Iniciar sesión
+            </a>
+
+        {% endif %}
+
+    </nav>
+
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="flash-container">
+            {% for category, message in messages %}
+                <div class="flash {{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+<main class="contenido">
+    {% block content %}
+    {% endblock %}
+</main>
+
+<footer>
+    <p>© 2026 TechStore - Tienda de Tecnología</p>
+</footer>
+
+</body>
+</html>

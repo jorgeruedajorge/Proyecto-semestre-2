@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Finalizar compra - TechStore{% endblock %}
+{% block content %}
+<section class="checkout"><span class="ts-eyebrow">⚡ TechStore · tecnología</span><h1 class="ts-glow">💳 Finalizar compra</h1><div class="checkout-contenedor">
+<div class="checkout-formulario"><h2>🧑 Datos del cliente</h2><form method="POST">
+<div class="campo"><label for="nombre">Nombre completo</label><input type="text" id="nombre" name="nombre" placeholder="Ingrese su nombre completo" required></div>
+<div class="campo"><label for="correo">Correo electrónico</label><input type="email" id="correo" name="correo" placeholder="ejemplo@correo.com" required></div>
+<div class="campo"><label for="metodo_pago">💳 Método de pago</label><select id="metodo_pago" name="metodo_pago" required><option value="">Seleccione un método de pago</option>{% for metodo in metodos %}<option value="{{ metodo.id_metodo }}">{{ metodo.nombre }}</option>{% endfor %}</select></div>
+<button type="submit" class="btn-comprar">✓ Confirmar compra</button></form></div>
+<div class="checkout-resumen"><h2>🧾 Resumen del pedido</h2>{% for item in productos %}<div class="checkout-producto"><img class="checkout-thumb" src="{% if item.producto.imagen_url %}
+{{ url_for('static', filename=item.producto.imagen_url) }}
+{% elif 'fury' in item.producto.nombre|lower %}
+{{ url_for('static', filename='img/fury.webp') }}
+{% elif 'hyper' in item.producto.nombre|lower %}
+{{ url_for('static', filename='img/hyper.jpg') }}
+{% elif 'lenovo' in item.producto.nombre|lower %}
+{{ url_for('static', filename='img/lenovo.jpg') }}
+{% elif 'cable' in item.producto.nombre|lower and 'logitech' in item.producto.nombre|lower %}
+{{ url_for('static', filename='img/logitech cable.webp') }}
+{% elif 'logitech' in item.producto.nombre|lower %}
+{{ url_for('static', filename='img/logitech.webp') }}
+{% elif 'microsoft' in item.producto.nombre|lower %}
+{{ url_for('static', filename='img/microsoft.webp') }}
+{% elif 'nv2' in item.producto.nombre|lower %}
+{{ url_for('static', filename='img/nv2.webp') }}
+{% elif 'nvidia' in item.producto.nombre|lower %}
+{{ url_for('static', filename='img/nvidia.jpg') }}
+{% elif 'tuf' in item.producto.nombre|lower %}
+{{ url_for('static', filename='img/tuf.png') }}
+{% elif 'vivobook' in item.producto.nombre|lower %}
+{{ url_for('static', filename='img/vivobook.webp') }}
+{% elif 'windows' in item.producto.nombre|lower %}
+{{ url_for('static', filename='img/windows.avif') }}
+{% else %}
+{{ url_for('static', filename='img/fury.webp') }}
+{% endif %}" alt="{{ item.producto.nombre }}"><div class="checkout-producto-info"><strong>{{ item.producto.nombre }}</strong><small>{{ item.cantidad }} × ${{ "%.2f"|format(item.producto.precio) }}</small></div><strong>${{ "%.2f"|format(item.subtotal) }}</strong></div>{% endfor %}
+<div class="total-linea"><span>Subtotal</span><strong>${{ "%.2f"|format(subtotal) }}</strong></div><div class="total-linea"><span>IVA 15%</span><strong>${{ "%.2f"|format(iva) }}</strong></div><div class="total-final"><span>TOTAL</span><strong>${{ "%.2f"|format(total) }}</strong></div></div></div></section>
+{% endblock %}

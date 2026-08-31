@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}TechStore | Catálogo{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="hero-contenido">
+    <span class="etiqueta">TECNOLOGÍA PARA TODOS</span>
+    <span class="ts-eyebrow">⚡ TechStore · tecnología</span><h1 class="ts-glow">Todo lo que necesitas <span>en tecnología.</span></h1>
+    <p>Encuentra laptops, componentes, accesorios y software en un solo lugar.</p>
+    <a href="#productos" class="btn-principal">Explorar productos</a>
+  </div><div class="hero-icono">💻</div>
+</section>
+
+<section id="categorias" class="categorias">
+  <div class="section-header"><div><span class="subtitulo">EXPLORA</span><h2>Categorías</h2></div></div>
+  <div class="categorias-grid">
+    <a href="{{ url_for('catalogo') }}" class="categoria-card"><div class="categoria-icono">🛍️</div><h3>Todos</h3><p>Ver todo el catálogo</p></a>
+    {% for categoria in categorias %}
+    <a href="{{ url_for('catalogo', categoria=categoria.id_categoria) }}" class="categoria-card">
+      <div class="categoria-icono">
+        {% if categoria.nombre == "Laptops" %}💻{% elif categoria.nombre == "Componentes" %}⌨️{% elif categoria.nombre == "Accesorios" %}🖱️{% else %}💿{% endif %}
+      </div><h3>{{ categoria.nombre }}</h3><p>Ver productos</p>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section id="productos" class="productos">
+  <div class="section-header"><div><span class="subtitulo">CATÁLOGO</span><h2>Productos tecnológicos</h2></div><span class="contador">{{ productos|length }} productos</span></div>
+  {% if productos %}
+  <div class="productos-grid">
+    {% for producto in productos %}
+    <article class="producto-card">
+      <div class="producto-imagen">
+        <img src="{% if producto.imagen_url %}
+{{ url_for('static', filename=producto.imagen_url) }}
+{% elif 'fury' in producto.nombre|lower %}
+{{ url_for('static', filename='img/fury.webp') }}
+{% elif 'hyper' in producto.nombre|lower %}
+{{ url_for('static', filename='img/hyper.jpg') }}
+{% elif 'lenovo' in producto.nombre|lower %}
+{{ url_for('static', filename='img/lenovo.jpg') }}
+{% elif 'cable' in producto.nombre|lower and 'logitech' in producto.nombre|lower %}
+{{ url_for('static', filename='img/logitech cable.webp') }}
+{% elif 'logitech' in producto.nombre|lower %}
+{{ url_for('static', filename='img/logitech.webp') }}
+{% elif 'microsoft' in producto.nombre|lower %}
+{{ url_for('static', filename='img/microsoft.webp') }}
+{% elif 'nv2' in producto.nombre|lower %}
+{{ url_for('static', filename='img/nv2.webp') }}
+{% elif 'nvidia' in producto.nombre|lower %}
+{{ url_for('static', filename='img/nvidia.jpg') }}
+{% elif 'tuf' in producto.nombre|lower %}
+{{ url_for('static', filename='img/tuf.png') }}
+{% elif 'vivobook' in producto.nombre|lower %}
+{{ url_for('static', filename='img/vivobook.webp') }}
+{% elif 'windows' in producto.nombre|lower %}
+{{ url_for('static', filename='img/windows.avif') }}
+{% else %}
+{{ url_for('static', filename='img/fury.webp') }}
+{% endif %}" alt="{{ producto.nombre }}" loading="lazy">
+      </div>
+      <div class="producto-info">
+        <span class="producto-id">{{ producto.marca.nombre }} · {{ producto.codigo }}</span>
+        <h3>{{ producto.nombre }}</h3>
+        <p class="descripcion">{{ producto.descripcion }}</p>
+        <div class="producto-datos">
+          <span class="precio">${{ "%.2f"|format(producto.precio_final()) }}</span>
+          {% if producto.stock > 0 %}<span class="stock disponible">Stock: {{ producto.stock }}</span>{% else %}<span class="stock agotado">Agotado</span>{% endif %}
+        </div>
+        <div class="acciones-producto">
+          <a href="{{ url_for('detalle_producto', producto_id=producto.id_producto) }}" class="btn-detalle">Ver detalle</a>
+          {% if producto.stock > 0 %}
+          <form action="{{ url_for('agregar_carrito', producto_id=producto.id_producto) }}" method="POST"><button type="submit" class="btn-carrito">🛒 Agregar</button></form>
+          {% else %}<button class="btn-carrito agotado-btn" disabled>Agotado</button>{% endif %}
+        </div>
+        {% if session.get('usuario_id') and session.get('es_admin') %}
+        <div class="admin-actions">
+          <a class="btn-admin" href="{{ url_for('editar_producto', producto_id=producto.id_producto) }}">✏️ Editar</a>
+          <form method="POST" action="{{ url_for('eliminar_producto', producto_id=producto.id_producto) }}" onsubmit="return confirm('¿Eliminar este producto?')"><button class="btn-admin btn-danger">🗑️ Eliminar</button></form>
+        </div>
+        {% endif %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}<div class="sin-productos"><div>📦</div><h3>No hay productos en esta categoría</h3><a href="{{ url_for('catalogo') }}" class="btn-principal">Ver todo el catálogo</a></div>{% endif %}
+</section>
+{% endblock %}

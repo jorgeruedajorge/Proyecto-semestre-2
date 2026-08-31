@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}{{ producto.nombre }} | TechStore{% endblock %}
+
+{% block content %}
+<section class="detalle">
+    <a href="{{ url_for('catalogo') }}" class="volver">← Volver al catálogo</a>
+
+    <div class="detalle-card">
+
+        <div class="detalle-imagen">
+            {% if producto.imagen_url %}
+                <img src="{{ url_for('static', filename=producto.imagen_url) }}"
+                     alt="{{ producto.nombre }}">
+            {% elif 'fury' in producto.nombre|lower %}
+                <img src="{{ url_for('static', filename='img/fury.webp') }}"
+                     alt="{{ producto.nombre }}">
+            {% elif 'hyper' in producto.nombre|lower %}
+                <img src="{{ url_for('static', filename='img/hyper.jpg') }}"
+                     alt="{{ producto.nombre }}">
+            {% elif 'lenovo' in producto.nombre|lower %}
+                <img src="{{ url_for('static', filename='img/lenovo.jpg') }}"
+                     alt="{{ producto.nombre }}">
+            {% elif 'cable' in producto.nombre|lower and 'logitech' in producto.nombre|lower %}
+                <img src="{{ url_for('static', filename='img/logitech cable.webp') }}"
+                     alt="{{ producto.nombre }}">
+            {% elif 'logitech' in producto.nombre|lower %}
+                <img src="{{ url_for('static', filename='img/logitech.webp') }}"
+                     alt="{{ producto.nombre }}">
+            {% elif 'microsoft' in producto.nombre|lower %}
+                <img src="{{ url_for('static', filename='img/microsoft.webp') }}"
+                     alt="{{ producto.nombre }}">
+            {% elif 'nv2' in producto.nombre|lower %}
+                <img src="{{ url_for('static', filename='img/nv2.webp') }}"
+                     alt="{{ producto.nombre }}">
+            {% elif 'nvidia' in producto.nombre|lower %}
+                <img src="{{ url_for('static', filename='img/nvidia.jpg') }}"
+                     alt="{{ producto.nombre }}">
+            {% elif 'tuf' in producto.nombre|lower %}
+                <img src="{{ url_for('static', filename='img/tuf.png') }}"
+                     alt="{{ producto.nombre }}">
+            {% elif 'vivobook' in producto.nombre|lower %}
+                <img src="{{ url_for('static', filename='img/vivobook.webp') }}"
+                     alt="{{ producto.nombre }}">
+            {% elif 'windows' in producto.nombre|lower %}
+                <img src="{{ url_for('static', filename='img/windows.avif') }}"
+                     alt="{{ producto.nombre }}">
+            {% else %}
+                <img src="{{ url_for('static', filename='img/fury.webp') }}"
+                     alt="{{ producto.nombre }}">
+            {% endif %}
+        </div>
+
+        <div class="detalle-info">
+            <span class="producto-id">
+                {{ producto.marca.nombre }} · {{ producto.codigo }}
+            </span>
+
+            <span class="ts-eyebrow">⚡ TechStore · tecnología</span><h1 class="ts-glow">{{ producto.nombre }}</h1>
+
+            <p class="detalle-tipo">
+                {{ producto.descripcion_tipo() }}
+            </p>
+
+            <p class="detalle-descripcion">
+                {{ producto.descripcion }}
+            </p>
+
+            <div class="detalle-precio">
+                ${{ "%.2f"|format(producto.precio_final()) }}
+            </div>
+
+            {% if producto.stock > 0 %}
+                <span class="stock disponible">✓ Disponible</span>
+                <p class="stock-texto">
+                    {{ producto.stock }} unidades disponibles
+                </p>
+
+                <form action="{{ url_for('agregar_carrito', producto_id=producto.id_producto) }}"
+                      method="POST">
+                    <button type="submit" class="btn-comprar">
+                        🛒 Agregar al carrito
+                    </button>
+                </form>
+            {% else %}
+                <span class="stock agotado">✕ Producto agotado</span>
+                <button class="btn-comprar deshabilitado" disabled>
+                    Producto agotado
+                </button>
+            {% endif %}
+        </div>
+
+    </div>
+</section>
+{% endblock %}
