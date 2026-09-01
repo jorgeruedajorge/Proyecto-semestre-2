@@ -298,19 +298,6 @@ p {
     font-size: 18px;
 }
 
-.hero-icono {
-    position: relative;
-    z-index: 2;
-    display: grid;
-    place-items: center;
-    width: 190px;
-    height: 190px;
-    border: 1px solid rgba(34, 211, 238, .18);
-    border-radius: 40px;
-    background: rgba(34, 211, 238, .06);
-    font-size: 90px;
-    box-shadow: 0 0 60px rgba(34, 211, 238, .08);
-}
 
 .btn-principal,
 .btn-comprar,
@@ -1215,4 +1202,48 @@ footer p {
     .precio {
         font-size: 23px;
     }
+}
+
+/* =========================================================
+   CHECKOUT / FACTURA PROFESIONAL
+   ========================================================= */
+.checkout-ayuda{opacity:.7;margin-top:-8px;margin-bottom:20px;font-size:.9rem}
+.campo small{display:block;margin-top:6px;opacity:.62;font-size:.78rem}
+.factura-page{max-width:1100px;margin:0 auto;padding:35px 20px 70px}
+.factura-card{overflow:hidden;border:1px solid rgba(255,255,255,.10);border-radius:22px;background:rgba(255,255,255,.035);box-shadow:0 18px 55px rgba(0,0,0,.25)}
+.factura-head{display:flex;justify-content:space-between;gap:25px;padding:30px 34px;border-bottom:2px solid #2563eb;align-items:flex-start}
+.factura-head h1{margin:5px 0;font-size:2rem}
+.factura-head p{margin:0;opacity:.65;font-weight:700;letter-spacing:.08em}
+.factura-meta{text-align:right;display:flex;flex-direction:column;gap:5px}
+.factura-meta span{font-size:.72rem;opacity:.6;letter-spacing:.08em}
+.factura-meta strong{font-size:1.05rem}
+.factura-meta small{opacity:.65}
+.factura-meta b{color:#22c55e;margin-top:5px}
+.factura-body{padding:30px 34px}
+.factura-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:25px}
+.factura-info-box{padding:18px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.025)}
+.factura-info-box>span{font-size:.72rem;opacity:.55;letter-spacing:.08em}
+.factura-info-box strong{display:block;margin:7px 0;font-size:1rem}
+.factura-info-box p{margin:4px 0;opacity:.7}
+.factura-table-wrap{overflow-x:auto}
+.factura-table{width:100%;border-collapse:collapse;min-width:620px}
+.factura-table th{background:#0f172a;color:#fff;text-align:left;padding:13px;font-size:.76rem;text-transform:uppercase;letter-spacing:.04em}
+.factura-table td{padding:14px 13px;border-bottom:1px solid rgba(255,255,255,.08)}
+.factura-table th:nth-child(n+2),.factura-table td:nth-child(n+2){text-align:right}
+.factura-totales{width:min(390px,100%);margin:25px 0 0 auto}
+.factura-totales>div{display:flex;justify-content:space-between;padding:9px 0;opacity:.8}
+.factura-totales .factura-total{margin-top:5px;padding:14px;border-radius:12px;background:rgba(37,99,235,.14);border-top:2px solid #2563eb;opacity:1;font-size:1.2rem}
+.factura-gracias{margin-top:30px;padding:18px;border-radius:13px;text-align:center;background:rgba(255,255,255,.025);display:flex;flex-direction:column;gap:5px}
+.factura-gracias span{opacity:.6;font-size:.85rem}
+.acciones-factura{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;padding:0 34px 30px}
+.btn-factura{display:inline-block;padding:12px 18px;border-radius:11px;text-decoration:none;background:#2563eb;color:#fff;font-weight:700}
+.btn-factura:hover{transform:translateY(-1px);opacity:.92}
+.btn-factura.btn-sec{background:rgba(255,255,255,.08)}
+@media(max-width:700px){
+ .factura-page{padding:20px 10px 45px}
+ .factura-head{padding:22px 20px;flex-direction:column}
+ .factura-meta{text-align:left}
+ .factura-body{padding:20px}
+ .factura-info-grid{grid-template-columns:1fr}
+ .acciones-factura{padding:0 20px 22px}
 }

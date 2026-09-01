@@ -18,6 +18,12 @@
         flex-wrap: wrap;
     }
 
+    .admin-header-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
     .admin-header h1 {
         margin: 5px 0 8px;
     }
@@ -241,6 +247,10 @@
             flex-wrap: nowrap;
         }
     }
+
+.btn-pdf { margin-left: 8px; text-decoration: none; white-space: nowrap; }
+.panel-title { gap: 10px; }
+.panel-title > div { flex: 1; }
 </style>
 
 <section class="admin-page">
@@ -252,10 +262,16 @@
             <p>Inventario, ventas, reportes y gestión de productos de TechStore.</p>
         </div>
 
-        <a class="btn-admin btn-primary"
-           href="{{ url_for('nuevo_producto') }}">
-            ➕ Registrar producto
-        </a>
+        <div class="admin-header-actions">
+            <a class="btn-admin btn-primary"
+               href="{{ url_for('dashboard_pdf') }}">
+                ⬇️ Descargar dashboard PDF
+            </a>
+            <a class="btn-admin btn-primary"
+               href="{{ url_for('nuevo_producto') }}">
+                ➕ Registrar producto
+            </a>
+        </div>
     </div>
 
 
@@ -282,6 +298,10 @@
     ====================================================== -->
 
     <section id="dashboard" class="stats-grid">
+
+        <div style="grid-column:1/-1; text-align:right; margin-bottom:10px;">
+            <a class="btn-admin btn-primary" href="{{ url_for('reporte_dashboard_pdf', reporte='dashboard') }}">📄 PDF de indicadores</a>
+        </div>
 
         <div class="stat-card">
             <div class="stat-label">Total productos</div>
@@ -334,6 +354,7 @@
             </div>
 
             <span class="badge">vw_inventario</span>
+            <a class="btn-admin btn-primary btn-pdf" href="{{ url_for('reporte_dashboard_pdf', reporte='inventario') }}">📄 PDF</a>
         </div>
 
         <div class="table-wrap">
@@ -408,6 +429,7 @@
             </div>
 
             <span class="badge">vw_stock_bajo</span>
+            <a class="btn-admin btn-primary btn-pdf" href="{{ url_for('reporte_dashboard_pdf', reporte='stock-bajo') }}">📄 PDF</a>
         </div>
 
         <div class="table-wrap">
@@ -476,6 +498,7 @@
             </div>
 
             <span class="badge">vw_productos_agotados</span>
+            <a class="btn-admin btn-primary btn-pdf" href="{{ url_for('reporte_dashboard_pdf', reporte='agotados') }}">📄 PDF</a>
         </div>
 
         <div class="table-wrap">
@@ -542,6 +565,7 @@
             </div>
 
             <span class="badge">vw_ventas</span>
+            <a class="btn-admin btn-primary btn-pdf" href="{{ url_for('reporte_dashboard_pdf', reporte='ventas') }}">📄 PDF</a>
         </div>
 
         <div class="table-wrap">
@@ -612,6 +636,7 @@
             </div>
 
             <span class="badge">vw_resumen_ventas</span>
+            <a class="btn-admin btn-primary btn-pdf" href="{{ url_for('reporte_dashboard_pdf', reporte='resumen-ventas') }}">📄 PDF</a>
         </div>
 
         <div class="table-wrap">
@@ -672,6 +697,7 @@
             </div>
 
             <span class="badge">vw_detalle_ventas</span>
+            <a class="btn-admin btn-primary btn-pdf" href="{{ url_for('reporte_dashboard_pdf', reporte='detalle-ventas') }}">📄 PDF</a>
         </div>
 
         <div class="table-wrap">
@@ -743,6 +769,7 @@
             </div>
 
             <span class="badge">vw_productos_mas_vendidos</span>
+            <a class="btn-admin btn-primary btn-pdf" href="{{ url_for('reporte_dashboard_pdf', reporte='mas-vendidos') }}">📄 PDF</a>
         </div>
 
         <div class="table-wrap">
@@ -807,6 +834,7 @@
             </div>
 
             <span class="badge">vw_inventario_categoria</span>
+            <a class="btn-admin btn-primary btn-pdf" href="{{ url_for('reporte_dashboard_pdf', reporte='categorias') }}">📄 PDF</a>
         </div>
 
         <div class="table-wrap">
@@ -867,6 +895,10 @@
                 <p>Crear, editar y eliminar productos.</p>
             </div>
 
+            <a class="btn-admin btn-primary btn-pdf"
+               href="{{ url_for('reporte_dashboard_pdf', reporte='productos') }}">
+                📄 PDF
+            </a>
             <a class="btn-admin btn-primary"
                href="{{ url_for('nuevo_producto') }}">
                 ➕ Nuevo producto

@@ -11,6 +11,7 @@ from flask import (
 
 import os
 import uuid
+import re
 from werkzeug.utils import secure_filename
 
 from decimal import Decimal
@@ -20,6 +21,14 @@ from io import BytesIO
 
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import (
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
+    PageBreak, KeepTogether
+)
+from reportlab.lib.units import mm
 
 from config import Config
 
@@ -42,8 +51,9 @@ from models import (
 )
 
 
+# =========================================================
 # CONFIGURACIÓN
-
+# =========================================================
 
 app = Flask(__name__)
 
@@ -55,8 +65,9 @@ db.init_app(app)
 # No se sobrescribe aquí para mantener una sola configuración.
 
 
+# =========================================================
 # INICIO
-
+# =========================================================
 
 @app.route("/")
 def inicio():
@@ -66,6 +77,10 @@ def inicio():
     )
 
 
+
+# =========================================================
+# LOGIN
+# =========================================================
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -108,7 +123,9 @@ def login():
     return render_template("login.html")
 
 
-
+# =========================================================
+# LOGOUT
+# =========================================================
 
 @app.route("/logout")
 def logout():
@@ -126,7 +143,9 @@ def logout():
     return redirect(url_for("catalogo"))
 
 
-
+# =========================================================
+# CATÁLOGO
+# =========================================================
 
 @app.route("/catalogo")
 def catalogo():
@@ -166,6 +185,9 @@ def catalogo():
     )
 
 
+# =========================================================
+# DETALLE
+# =========================================================
 
 @app.route("/producto/<int:producto_id>")
 def detalle_producto(producto_id):
@@ -179,6 +201,10 @@ def detalle_producto(producto_id):
         producto=producto
     )
 
+
+# =========================================================
+# CARRITO
+# =========================================================
 
 @app.route("/carrito")
 def carrito():
@@ -230,6 +256,10 @@ def carrito():
         total=total
     )
 
+
+# =========================================================
+# AGREGAR AL CARRITO
+# =========================================================
 
 @app.route(
     "/carrito/agregar/<int:producto_id>",
@@ -292,6 +322,9 @@ def agregar_carrito(producto_id):
     )
 
 
+# =========================================================
+# ELIMINAR
+# =========================================================
 
 @app.route(
     "/carrito/eliminar/<int:producto_id>",
@@ -318,9 +351,9 @@ def eliminar_carrito(producto_id):
     )
 
 
-
+# =========================================================
 # VACIAR
-
+# =========================================================
 
 @app.route(
     "/carrito/vaciar",
@@ -337,9 +370,9 @@ def vaciar_carrito():
     )
 
 
-
+# =========================================================
 # CONTADOR DEL CARRITO
-
+# =========================================================
 
 @app.context_processor
 def datos_carrito():
@@ -356,8 +389,9 @@ def datos_carrito():
     }
 
 
+# =========================================================
 # CHECKOUT
-
+# =========================================================
 
 @app.route(
     "/checkout",
@@ -448,15 +482,31 @@ def checkout():
             ""
         ).strip()
 
+        cedula = request.form.get(
+            "cedula",
+            ""
+        ).strip()
+
         metodo_id = request.form.get(
             "metodo_pago",
             type=int
         )
 
-        if not nombre or not correo:
+        if not nombre or not correo or not cedula:
 
             flash(
-                "Ingrese nombre y correo.",
+                "Ingrese nombre, cédula y correo.",
+                "error"
+            )
+
+            return redirect(
+                url_for("checkout")
+            )
+
+        if not re.fullmatch(r"\d{10}", cedula):
+
+            flash(
+                "La cédula debe contener exactamente 10 dígitos.",
                 "error"
             )
 
@@ -482,8 +532,9 @@ def checkout():
 
         try:
 
+            # =============================================
             # BUSCAR O CREAR USUARIO
-
+            # =============================================
 
             usuario = (
                 Usuario.query
@@ -520,6 +571,7 @@ def checkout():
                 usuario = Usuario(
                     nombre=nombre,
                     correo=correo,
+                    cedula=cedula,
                     password="cliente"
                     + datetime.now().strftime(
                         "%Y%m%d%H%M%S"
@@ -534,10 +586,11 @@ def checkout():
             else:
 
                 usuario.nombre = nombre
+                usuario.cedula = cedula
 
-
+            # =============================================
             # ESTADO PAGADO
-
+            # =============================================
 
             estado = (
                 EstadoPedido.query
@@ -561,8 +614,9 @@ def checkout():
 
                 db.session.flush()
 
-            # CREACION DE PEDIDO
-
+            # =============================================
+            # CREAR PEDIDO
+            # =============================================
 
             pedido = Pedido(
                 usuario_id=usuario.id_usuario,
@@ -575,9 +629,9 @@ def checkout():
 
             db.session.flush()
 
-
+            # =============================================
             # DETALLES DEL PEDIDO
-
+            # =============================================
 
             for item in productos:
 
@@ -601,8 +655,9 @@ def checkout():
                     datetime.now()
                 )
 
+            # =============================================
             # PAGO
-            
+            # =============================================
 
             pago = Pago(
                 pedido_id=pedido.id_pedido,
@@ -617,8 +672,9 @@ def checkout():
 
             db.session.flush()
 
+            # =============================================
             # FACTURA
-            
+            # =============================================
 
             numero_factura = (
                 f"FAC-{datetime.now().strftime('%Y%m%d%H%M%S')}"
@@ -641,9 +697,9 @@ def checkout():
 
             db.session.flush()
 
-            
+            # =============================================
             # DETALLE FACTURA
-            
+            # =============================================
 
             for item in productos:
 
@@ -661,9 +717,9 @@ def checkout():
                     detalle_factura
                 )
 
-            
-            # GUARDAR 
-           
+            # =============================================
+            # GUARDAR TODO
+            # =============================================
 
             db.session.commit()
 
@@ -714,8 +770,10 @@ def checkout():
     )
 
 
-# ADMINISTRACION DE PRODUCTOS
 
+# =========================================================
+# ADMINISTRACIÓN DE PRODUCTOS
+# =========================================================
 
 ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".avif"}
 MAX_IMAGE_SIZE = 5 * 1024 * 1024
@@ -833,6 +891,350 @@ def admin_productos():
         inventario_categoria=datos["inventario_categoria"]
     )
 
+
+@app.route("/admin/dashboard/pdf")
+def dashboard_pdf():
+
+    if not usuario_es_admin():
+        flash("Debes iniciar sesión como administrador.", "error")
+        return redirect(url_for("login"))
+
+    vistas = {
+        "inventario": "vw_inventario",
+        "stock_bajo": "vw_stock_bajo",
+        "agotados": "vw_productos_agotados",
+        "ventas": "vw_ventas",
+        "detalle_ventas": "vw_detalle_ventas",
+        "resumen_ventas": "vw_resumen_ventas",
+        "mas_vendidos": "vw_productos_mas_vendidos",
+        "inventario_categoria": "vw_inventario_categoria",
+        "dashboard": "vw_dashboard_inventario",
+    }
+
+    datos = {}
+    try:
+        for clave, nombre_vista in vistas.items():
+            resultado = db.session.execute(
+                text(f'SELECT * FROM "{nombre_vista}"')
+            )
+            datos[clave] = resultado.mappings().all()
+    except Exception as e:
+        db.session.rollback()
+        print("ERROR GENERANDO PDF DEL DASHBOARD:", e)
+        return "No se pudieron consultar los datos del dashboard.", 500
+
+    productos = Producto.query.order_by(Producto.id_producto.desc()).all()
+    dashboard = datos["dashboard"][0] if datos["dashboard"] else {}
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, pagesize=letter,
+        rightMargin=12*mm, leftMargin=12*mm,
+        topMargin=15*mm, bottomMargin=17*mm,
+        title="Dashboard TechStore", author="TechStore"
+    )
+
+    azul = colors.HexColor("#2563EB")
+    oscuro = colors.HexColor("#0F172A")
+    gris = colors.HexColor("#64748B")
+    claro = colors.HexColor("#EFF6FF")
+    borde = colors.HexColor("#CBD5E1")
+
+    styles = getSampleStyleSheet()
+    H = ParagraphStyle("H", parent=styles["Heading1"], fontName="Helvetica-Bold",
+                       fontSize=20, textColor=oscuro, spaceAfter=2*mm)
+    SH = ParagraphStyle("SH", parent=styles["Normal"], fontSize=8.5, textColor=gris)
+    TH = ParagraphStyle("TH", parent=styles["Normal"], fontName="Helvetica-Bold",
+                        fontSize=7.2, textColor=colors.white)
+    TD = ParagraphStyle("TD", parent=styles["Normal"], fontSize=7.2,
+                        leading=9, textColor=oscuro)
+    TDR = ParagraphStyle("TDR", parent=TD, alignment=TA_RIGHT)
+
+    story = [
+        Paragraph("TECHSTORE", H),
+        Paragraph("Dashboard administrativo · Inventario, ventas y gestión", SH),
+        Spacer(1, 5*mm)
+    ]
+
+    # KPIs
+    kpis = [
+        ("Total productos", dashboard.get("total_productos", 0)),
+        ("Unidades en inventario", dashboard.get("unidades_totales", 0)),
+        ("Stock bajo", dashboard.get("productos_stock_bajo", 0)),
+        ("Agotados", dashboard.get("productos_agotados", 0)),
+        ("Valor del inventario", f"${float(dashboard.get('valor_total_inventario', 0)):,.2f}")
+    ]
+    kdata = [[Paragraph(k, SH) for k,v in kpis],
+             [Paragraph(str(v), ParagraphStyle("KV", parent=TD, fontSize=12,
+                                                fontName="Helvetica-Bold", textColor=oscuro))
+              for k,v in kpis]]
+    kt = Table(kdata, colWidths=[36*mm]*5)
+    kt.setStyle(TableStyle([
+        ("BACKGROUND",(0,0),(-1,-1),claro),
+        ("BOX",(0,0),(-1,-1),.5,borde),
+        ("INNERGRID",(0,0),(-1,-1),.5,borde),
+        ("LEFTPADDING",(0,0),(-1,-1),3*mm),
+        ("RIGHTPADDING",(0,0),(-1,-1),3*mm),
+        ("TOPPADDING",(0,0),(-1,-1),2.5*mm),
+        ("BOTTOMPADDING",(0,0),(-1,-1),2.5*mm),
+    ]))
+    story += [kt, Spacer(1, 7*mm)]
+
+    def add_section(title, data, columns, widths=None, max_rows=None):
+        story.append(Paragraph(title, ParagraphStyle(
+            "Sec"+str(len(story)), parent=styles["Heading2"],
+            fontName="Helvetica-Bold", fontSize=11, textColor=azul,
+            spaceBefore=3*mm, spaceAfter=2*mm
+        )))
+        if not data:
+            story.append(Paragraph("Sin registros.", SH))
+            return
+        shown=data if max_rows is None else data[:max_rows]
+        rows=[[Paragraph(str(c[0]),TH) for c in columns]]
+        for r in shown:
+            vals=[]
+            for key,align in columns:
+                val=r.get(key,"")
+                if val is None: val=""
+                if isinstance(val,(float,Decimal)):
+                    val=f"{float(val):,.2f}"
+                vals.append(Paragraph(str(val), TDR if align=="right" else TD))
+            rows.append(vals)
+        if widths is None:
+            widths=[(doc.width/len(columns))]*len(columns)
+        t=Table(rows,colWidths=widths,repeatRows=1)
+        t.setStyle(TableStyle([
+            ("BACKGROUND",(0,0),(-1,0),oscuro),
+            ("BOX",(0,0),(-1,-1),.45,borde),
+            ("INNERGRID",(0,0),(-1,-1),.3,borde),
+            ("ROWBACKGROUNDS",(0,1),(-1,-1),[colors.white,colors.HexColor("#F8FAFC")]),
+            ("LEFTPADDING",(0,0),(-1,-1),2*mm),
+            ("RIGHTPADDING",(0,0),(-1,-1),2*mm),
+            ("TOPPADDING",(0,0),(-1,-1),2*mm),
+            ("BOTTOMPADDING",(0,0),(-1,-1),2*mm),
+            ("VALIGN",(0,0),(-1,-1),"MIDDLE"),
+        ]))
+        story.append(t)
+        story.append(Spacer(1, 3*mm))
+
+    add_section("1. Inventario completo", datos["inventario"],
+        [("id_producto","left"),("codigo","left"),("nombre","left"),("tipo","left"),
+         ("categoria","left"),("marca","left"),("precio","right"),("stock","right"),
+         ("valor_inventario","right"),("estado_stock","left")],
+        [10*mm,20*mm,39*mm,18*mm,24*mm,22*mm,18*mm,13*mm,22*mm,22*mm])
+
+    add_section("2. Productos con stock bajo", datos["stock_bajo"],
+        [("id_producto","left"),("codigo","left"),("nombre","left"),("categoria","left"),
+         ("marca","left"),("precio","right"),("stock","right")],
+        [12*mm,24*mm,52*mm,27*mm,27*mm,22*mm,17*mm])
+
+    add_section("3. Productos agotados", datos["agotados"],
+        [("id_producto","left"),("codigo","left"),("nombre","left"),("tipo","left"),
+         ("categoria","left"),("marca","left"),("precio","right")],
+        [12*mm,24*mm,52*mm,20*mm,28*mm,27*mm,20*mm])
+
+    add_section("4. Ventas / pedidos", datos["ventas"],
+        [(k,"right" if k in ["id_pedido","total"] else "left")
+         for k in (list(datos["ventas"][0].keys()) if datos["ventas"] else [])],
+        None)
+
+    add_section("5. Resumen de ventas", datos["resumen_ventas"],
+        [(k,"right" if any(x in k.lower() for x in ["total","cantidad","monto","ventas"])
+          else "left")
+         for k in (list(datos["resumen_ventas"][0].keys()) if datos["resumen_ventas"] else [])])
+
+    add_section("6. Detalle de ventas", datos["detalle_ventas"],
+        [(k,"right" if any(x in k.lower() for x in ["cantidad","precio","subtotal","total"])
+          else "left")
+         for k in (list(datos["detalle_ventas"][0].keys()) if datos["detalle_ventas"] else [])])
+
+    add_section("7. Productos más vendidos", datos["mas_vendidos"],
+        [(k,"right" if any(x in k.lower() for x in ["cantidad","ventas","total"])
+          else "left")
+         for k in (list(datos["mas_vendidos"][0].keys()) if datos["mas_vendidos"] else [])])
+
+    add_section("8. Inventario por categoría", datos["inventario_categoria"],
+        [(k,"right" if any(x in k.lower() for x in ["cantidad","stock","valor"])
+          else "left")
+         for k in (list(datos["inventario_categoria"][0].keys()) if datos["inventario_categoria"] else [])])
+
+    # Gestión de productos: todos los elementos visibles en el dashboard.
+    prod_rows=[]
+    for p in productos:
+        prod_rows.append({
+            "id_producto": p.id_producto, "codigo": p.codigo,
+            "nombre": p.nombre, "tipo": p.tipo,
+            "categoria": p.categoria.nombre if p.categoria else "",
+            "marca": p.marca.nombre if p.marca else "",
+            "precio": p.precio, "stock": p.stock
+        })
+    add_section("9. Gestión de productos", prod_rows,
+        [("id_producto","right"),("codigo","left"),("nombre","left"),("tipo","left"),
+         ("categoria","left"),("marca","left"),("precio","right"),("stock","right")],
+        [12*mm,25*mm,49*mm,20*mm,27*mm,27*mm,20*mm,17*mm])
+
+    def footer(c, d):
+        c.saveState()
+        c.setStrokeColor(borde)
+        c.line(12*mm, 11*mm, 198*mm, 11*mm)
+        c.setFont("Helvetica", 7)
+        c.setFillColor(gris)
+        c.drawString(12*mm, 7*mm, "TechStore · Dashboard administrativo")
+        c.drawRightString(198*mm, 7*mm, f"Página {d.page}")
+        c.restoreState()
+
+    doc.build(story, onFirstPage=footer, onLaterPages=footer)
+    buffer.seek(0)
+    return send_file(
+        buffer, mimetype="application/pdf", as_attachment=True,
+        download_name=f"dashboard_techstore_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+    )
+
+
+
+@app.route("/admin/reporte/<reporte>/pdf")
+def reporte_dashboard_pdf(reporte):
+    """Genera un PDF independiente para cada módulo del dashboard."""
+    if not usuario_es_admin():
+        flash("Debes iniciar sesión como administrador.", "error")
+        return redirect(url_for("login"))
+
+    vistas = {
+        "inventario": ("Inventario completo", "vw_inventario"),
+        "stock-bajo": ("Productos con stock bajo", "vw_stock_bajo"),
+        "agotados": ("Productos agotados", "vw_productos_agotados"),
+        "ventas": ("Ventas y pedidos", "vw_ventas"),
+        "resumen-ventas": ("Resumen de ventas", "vw_resumen_ventas"),
+        "detalle-ventas": ("Detalle de ventas", "vw_detalle_ventas"),
+        "mas-vendidos": ("Productos más vendidos", "vw_productos_mas_vendidos"),
+        "categorias": ("Inventario por categoría", "vw_inventario_categoria"),
+    }
+
+    if reporte == "dashboard":
+        try:
+            result = db.session.execute(text('SELECT * FROM "vw_dashboard_inventario"'))
+            dashboard = result.mappings().first() or {}
+        except Exception as e:
+            db.session.rollback()
+            print("ERROR PDF DASHBOARD:", e)
+            return "No se pudieron consultar los datos.", 500
+
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=16*mm,
+                                leftMargin=16*mm, topMargin=18*mm, bottomMargin=18*mm,
+                                title="Resumen del Dashboard - TechStore")
+        styles = getSampleStyleSheet()
+        azul = colors.HexColor("#2563EB")
+        oscuro = colors.HexColor("#0F172A")
+        gris = colors.HexColor("#64748B")
+        claro = colors.HexColor("#EFF6FF")
+        borde = colors.HexColor("#CBD5E1")
+        story = [Paragraph("TECHSTORE", ParagraphStyle("dh", parent=styles["Heading1"], fontSize=22,
+                    fontName="Helvetica-Bold", textColor=oscuro)),
+                 Paragraph("Resumen ejecutivo del dashboard", ParagraphStyle("ds", parent=styles["Normal"],
+                    fontSize=9, textColor=gris)), Spacer(1, 8*mm)]
+        kpis = [
+            ("Total productos", dashboard.get("total_productos", 0)),
+            ("Unidades en inventario", dashboard.get("unidades_totales", 0)),
+            ("Stock bajo", dashboard.get("productos_stock_bajo", 0)),
+            ("Productos agotados", dashboard.get("productos_agotados", 0)),
+            ("Valor del inventario", f"${float(dashboard.get('valor_total_inventario', 0)):,.2f}"),
+        ]
+        for titulo, valor in kpis:
+            t = Table([[Paragraph(titulo, ParagraphStyle("kl", parent=styles["Normal"], fontSize=9, textColor=gris))],
+                       [Paragraph(str(valor), ParagraphStyle("kv", parent=styles["Normal"], fontSize=19,
+                            fontName="Helvetica-Bold", textColor=oscuro))]], colWidths=[doc.width])
+            t.setStyle(TableStyle([("BACKGROUND", (0,0), (-1,-1), claro), ("BOX", (0,0), (-1,-1), .6, borde),
+                                   ("LEFTPADDING", (0,0), (-1,-1), 6*mm), ("RIGHTPADDING", (0,0), (-1,-1), 6*mm),
+                                   ("TOPPADDING", (0,0), (-1,-1), 4*mm), ("BOTTOMPADDING", (0,0), (-1,-1), 4*mm)]))
+            story += [t, Spacer(1, 4*mm)]
+        story.append(Spacer(1, 4*mm))
+        story.append(Paragraph("Generado automáticamente por TechStore · " + datetime.now().strftime("%d/%m/%Y %H:%M"),
+            ParagraphStyle("df", parent=styles["Normal"], fontSize=8, textColor=gris)))
+        doc.build(story)
+        buffer.seek(0)
+        return send_file(buffer, mimetype="application/pdf", as_attachment=True,
+                         download_name=f"dashboard_resumen_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf")
+
+    if reporte == "productos":
+        titulo = "Gestión de productos"
+        productos = Producto.query.order_by(Producto.id_producto.desc()).all()
+        data = [{"id_producto": p.id_producto, "codigo": p.codigo, "nombre": p.nombre,
+                 "tipo": p.tipo, "categoria": p.categoria.nombre if p.categoria else "",
+                 "marca": p.marca.nombre if p.marca else "", "precio": p.precio, "stock": p.stock}
+                for p in productos]
+        keys = ["id_producto", "codigo", "nombre", "tipo", "categoria", "marca", "precio", "stock"]
+    elif reporte in vistas:
+        titulo, vista = vistas[reporte]
+        try:
+            result = db.session.execute(text(f'SELECT * FROM "{vista}"'))
+            data = result.mappings().all()
+        except Exception as e:
+            db.session.rollback()
+            print("ERROR PDF REPORTE:", e)
+            return "No se pudieron consultar los datos.", 500
+        keys = list(data[0].keys()) if data else []
+    else:
+        return "Reporte no encontrado.", 404
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=__import__('reportlab.lib.pagesizes', fromlist=['landscape']).landscape(letter),
+                            rightMargin=10*mm, leftMargin=10*mm, topMargin=15*mm, bottomMargin=17*mm,
+                            title=f"{titulo} - TechStore")
+    styles = getSampleStyleSheet()
+    azul = colors.HexColor("#2563EB")
+    oscuro = colors.HexColor("#0F172A")
+    gris = colors.HexColor("#64748B")
+    borde = colors.HexColor("#CBD5E1")
+    blanco = colors.white
+    H = ParagraphStyle("RH", parent=styles["Heading1"], fontSize=18, fontName="Helvetica-Bold", textColor=oscuro, spaceAfter=2*mm)
+    SH = ParagraphStyle("RS", parent=styles["Normal"], fontSize=8, textColor=gris, spaceAfter=5*mm)
+    TH = ParagraphStyle("RTH", parent=styles["Normal"], fontSize=6.5, leading=8, fontName="Helvetica-Bold", textColor=blanco)
+    TD = ParagraphStyle("RTD", parent=styles["Normal"], fontSize=6.5, leading=8, textColor=oscuro)
+    TR = ParagraphStyle("RTR", parent=TD, alignment=TA_RIGHT)
+    story = [Paragraph("TECHSTORE", H), Paragraph(titulo, ParagraphStyle("RT", parent=styles["Heading2"],
+                fontSize=12, fontName="Helvetica-Bold", textColor=azul)),
+             Paragraph(f"Reporte independiente · Generado {datetime.now().strftime('%d/%m/%Y %H:%M')}", SH)]
+
+    if not data:
+        story.append(Paragraph("No existen registros para este reporte.", TD))
+    else:
+        def label(k):
+            return str(k).replace("_", " ").title()
+        rows = [[Paragraph(label(k), TH) for k in keys]]
+        for r in data:
+            row=[]
+            for k in keys:
+                v=r.get(k, "")
+                if v is None: v=""
+                if isinstance(v, (float, Decimal)):
+                    v=f"{float(v):,.2f}"
+                txt=str(v)
+                align = "right" if isinstance(v, (int,float,Decimal)) or any(x in k.lower() for x in ["precio","total","valor","cantidad","stock","monto"]) else "left"
+                row.append(Paragraph(txt.replace("&", "&amp;"), TR if align == "right" else TD))
+            rows.append(row)
+        n=len(keys)
+        widths=[doc.width/n]*n
+        table=Table(rows, colWidths=widths, repeatRows=1)
+        table.setStyle(TableStyle([
+            ("BACKGROUND", (0,0), (-1,0), oscuro), ("TEXTCOLOR", (0,0), (-1,0), blanco),
+            ("BOX", (0,0), (-1,-1), .5, borde), ("INNERGRID", (0,0), (-1,-1), .3, borde),
+            ("ROWBACKGROUNDS", (0,1), (-1,-1), [colors.white, colors.HexColor("#F8FAFC")]),
+            ("LEFTPADDING", (0,0), (-1,-1), 1.8*mm), ("RIGHTPADDING", (0,0), (-1,-1), 1.8*mm),
+            ("TOPPADDING", (0,0), (-1,-1), 1.8*mm), ("BOTTOMPADDING", (0,0), (-1,-1), 1.8*mm),
+            ("VALIGN", (0,0), (-1,-1), "MIDDLE"),
+        ]))
+        story.append(table)
+
+    def footer(c, d):
+        c.saveState(); c.setStrokeColor(borde); c.line(10*mm, 11*mm, 287*mm, 11*mm)
+        c.setFont("Helvetica", 7); c.setFillColor(gris)
+        c.drawString(10*mm, 7*mm, "TechStore · Reporte independiente del dashboard")
+        c.drawRightString(287*mm, 7*mm, f"Página {d.page}"); c.restoreState()
+    doc.build(story, onFirstPage=footer, onLaterPages=footer)
+    buffer.seek(0)
+    return send_file(buffer, mimetype="application/pdf", as_attachment=True,
+                     download_name=f"{reporte.replace('-', '_')}_techstore_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf")
 
 @app.route("/admin/productos/nuevo", methods=["GET", "POST"])
 def nuevo_producto():
@@ -1162,267 +1564,226 @@ def eliminar_producto(producto_id):
     return redirect(url_for("admin_productos"))
 
 
-# FACTURA PDF
 
+# =========================================================
+# FACTURA PDF
+# =========================================================
 
 @app.route(
     "/factura/<int:factura_id>/pdf"
 )
 def factura_pdf(factura_id):
 
-    factura = db.session.get(
-        FacturaCabecera,
-        factura_id
-    )
+    factura = db.session.get(FacturaCabecera, factura_id)
 
     if not factura:
-
         return "Factura no encontrada", 404
 
     buffer = BytesIO()
 
-    pdf = canvas.Canvas(
+    # Documento A4 con márgenes profesionales.
+    doc = SimpleDocTemplate(
         buffer,
-        pagesize=letter
+        pagesize=letter,
+        rightMargin=16 * mm,
+        leftMargin=16 * mm,
+        topMargin=16 * mm,
+        bottomMargin=18 * mm,
+        title=f"Factura {factura.numero_factura}",
+        author="TechStore"
     )
 
-    ancho, alto = letter
+    styles = getSampleStyleSheet()
+    azul = colors.HexColor("#2563EB")
+    azul_oscuro = colors.HexColor("#0F172A")
+    gris = colors.HexColor("#64748B")
+    gris_claro = colors.HexColor("#F1F5F9")
+    borde = colors.HexColor("#CBD5E1")
+    verde = colors.HexColor("#16A34A")
 
-    y = alto - 50
-
-
-    # ENCABEZADO
-
-    pdf.setFont(
-        "Helvetica-Bold",
-        20
+    titulo = ParagraphStyle(
+        "Titulo",
+        parent=styles["Heading1"],
+        fontName="Helvetica-Bold",
+        fontSize=22,
+        leading=25,
+        textColor=azul_oscuro,
+        spaceAfter=3
+    )
+    subtitulo = ParagraphStyle(
+        "Subtitulo",
+        parent=styles["Normal"],
+        fontName="Helvetica",
+        fontSize=9,
+        leading=12,
+        textColor=gris
+    )
+    etiqueta = ParagraphStyle(
+        "Etiqueta",
+        parent=styles["Normal"],
+        fontName="Helvetica-Bold",
+        fontSize=8,
+        textColor=gris
+    )
+    normal = ParagraphStyle(
+        "NormalFactura",
+        parent=styles["Normal"],
+        fontName="Helvetica",
+        fontSize=9,
+        leading=12,
+        textColor=azul_oscuro
+    )
+    total_style = ParagraphStyle(
+        "Total",
+        parent=styles["Normal"],
+        fontName="Helvetica-Bold",
+        fontSize=13,
+        textColor=azul_oscuro,
+        alignment=TA_RIGHT
     )
 
-    pdf.drawString(
-        50,
-        y,
-        "TECHSTORE"
-    )
+    story = []
 
-    y -= 30
+    # Encabezado.
+    encabezado_izq = [
+        Paragraph("TECHSTORE", titulo),
+        Paragraph("Tecnología que impulsa tus ideas", subtitulo),
+        Spacer(1, 3 * mm),
+        Paragraph("FACTURA DE VENTA", ParagraphStyle(
+            "FacturaLabel", parent=etiqueta, textColor=azul
+        ))
+    ]
 
-    pdf.setFont(
-        "Helvetica-Bold",
-        12
-    )
+    encabezado_der = [
+        Paragraph("<b>N.º " + str(factura.numero_factura) + "</b>", ParagraphStyle(
+            "Num", parent=normal, fontSize=11, alignment=TA_RIGHT
+        )),
+        Paragraph(
+            factura.fecha.strftime("%d/%m/%Y %H:%M"),
+            ParagraphStyle("Fecha", parent=subtitulo, alignment=TA_RIGHT)
+        ),
+        Spacer(1, 3 * mm),
+        Paragraph("✓ PAGADO", ParagraphStyle(
+            "Pagado", parent=normal, textColor=verde,
+            fontName="Helvetica-Bold", alignment=TA_RIGHT
+        ))
+    ]
 
-    pdf.drawString(
-        50,
-        y,
-        "FACTURA DE VENTA"
-    )
+    head = Table([[encabezado_izq, encabezado_der]], colWidths=[112*mm, 64*mm])
+    head.setStyle(TableStyle([
+        ("VALIGN", (0,0), (-1,-1), "TOP"),
+        ("LEFTPADDING", (0,0), (-1,-1), 0),
+        ("RIGHTPADDING", (0,0), (-1,-1), 0),
+        ("TOPPADDING", (0,0), (-1,-1), 0),
+        ("BOTTOMPADDING", (0,0), (-1,-1), 0),
+        ("LINEBELOW", (0,0), (-1,-1), 2, azul),
+        ("BOTTOMPADDING", (0,0), (-1,-1), 5*mm),
+    ]))
+    story += [head, Spacer(1, 7*mm)]
 
-    y -= 25
+    # Cliente.
+    cliente_data = [
+        [Paragraph("DATOS DEL CLIENTE", etiqueta),
+         Paragraph("INFORMACIÓN DE PAGO", etiqueta)],
+        [Paragraph(
+            f"<b>{factura.usuario.nombre}</b><br/>"
+            f"Cédula: {factura.usuario.cedula or 'No registrada'}<br/>"
+            f"Correo: {factura.usuario.correo}",
+            normal
+        ),
+         Paragraph(
+            f"Método: {factura.pedido.pagos[0].metodo.nombre if factura.pedido and factura.pedido.pagos else 'No registrado'}<br/>"
+            f"Estado: <b>Pagado</b><br/>"
+            f"Pedido: #{factura.pedido_id}",
+            normal
+        )]
+    ]
+    cliente = Table(cliente_data, colWidths=[88*mm, 88*mm])
+    cliente.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,0), gris_claro),
+        ("BOX", (0,0), (-1,-1), .6, borde),
+        ("INNERGRID", (0,0), (-1,-1), .5, borde),
+        ("LEFTPADDING", (0,0), (-1,-1), 4*mm),
+        ("RIGHTPADDING", (0,0), (-1,-1), 4*mm),
+        ("TOPPADDING", (0,0), (-1,-1), 3*mm),
+        ("BOTTOMPADDING", (0,0), (-1,-1), 3*mm),
+        ("VALIGN", (0,0), (-1,-1), "TOP"),
+    ]))
+    story += [cliente, Spacer(1, 7*mm)]
 
-    pdf.setFont(
-        "Helvetica",
-        10
-    )
-
-    pdf.drawString(
-        50,
-        y,
-        f"Factura: {factura.numero_factura}"
-    )
-
-    y -= 18
-
-    pdf.drawString(
-        50,
-        y,
-        f"Fecha: {factura.fecha.strftime('%d/%m/%Y %H:%M')}"
-    )
-
-    y -= 30
-
-
-    # CLIENTE
-
-    pdf.setFont(
-        "Helvetica-Bold",
-        11
-    )
-
-    pdf.drawString(
-        50,
-        y,
-        "Cliente"
-    )
-
-    y -= 18
-
-    pdf.setFont(
-        "Helvetica",
-        10
-    )
-
-    pdf.drawString(
-        50,
-        y,
-        f"Nombre: {factura.usuario.nombre}"
-    )
-
-    y -= 18
-
-    pdf.drawString(
-        50,
-        y,
-        f"Correo: {factura.usuario.correo}"
-    )
-
-    y -= 30
-
-    # PRODUCTOS
-
-    pdf.setFont(
-        "Helvetica-Bold",
-        10
-    )
-
-    pdf.drawString(
-        50,
-        y,
-        "Producto"
-    )
-
-    pdf.drawString(
-        300,
-        y,
-        "Cantidad"
-    )
-
-    pdf.drawString(
-        370,
-        y,
-        "Precio"
-    )
-
-    pdf.drawString(
-        450,
-        y,
-        "Subtotal"
-    )
-
-    y -= 18
-
-    pdf.setFont(
-        "Helvetica",
-        9
-    )
+    # Detalle.
+    rows = [[
+        Paragraph("PRODUCTO", etiqueta),
+        Paragraph("CANT.", etiqueta),
+        Paragraph("PRECIO UNIT.", etiqueta),
+        Paragraph("SUBTOTAL", etiqueta)
+    ]]
 
     for detalle in factura.detalles:
+        rows.append([
+            Paragraph(detalle.producto.nombre, normal),
+            Paragraph(str(detalle.cantidad), normal),
+            Paragraph(f"${float(detalle.precio_unitario):,.2f}",
+                      ParagraphStyle("r1", parent=normal, alignment=TA_RIGHT)),
+            Paragraph(f"${float(detalle.subtotal):,.2f}",
+                      ParagraphStyle("r2", parent=normal, alignment=TA_RIGHT))
+        ])
 
-        nombre = detalle.producto.nombre
+    tabla = Table(rows, colWidths=[91*mm, 20*mm, 33*mm, 32*mm], repeatRows=1)
+    tabla.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,0), azul_oscuro),
+        ("TEXTCOLOR", (0,0), (-1,0), colors.white),
+        ("BOX", (0,0), (-1,-1), .6, borde),
+        ("INNERGRID", (0,0), (-1,-1), .35, borde),
+        ("ROWBACKGROUNDS", (0,1), (-1,-1), [colors.white, colors.HexColor("#F8FAFC")]),
+        ("LEFTPADDING", (0,0), (-1,-1), 3*mm),
+        ("RIGHTPADDING", (0,0), (-1,-1), 3*mm),
+        ("TOPPADDING", (0,0), (-1,-1), 3*mm),
+        ("BOTTOMPADDING", (0,0), (-1,-1), 3*mm),
+        ("VALIGN", (0,0), (-1,-1), "MIDDLE"),
+        ("ALIGN", (1,1), (-1,-1), "RIGHT"),
+    ]))
+    story += [tabla, Spacer(1, 6*mm)]
 
-        if len(nombre) > 38:
-            nombre = nombre[:38] + "..."
+    # Totales.
+    totales = [
+        ["Subtotal", f"${float(factura.subtotal):,.2f}"],
+        ["IVA 15%", f"${float(factura.impuestos):,.2f}"],
+        ["TOTAL", f"${float(factura.total):,.2f}"]
+    ]
+    tt = Table(totales, colWidths=[43*mm, 38*mm], hAlign="RIGHT")
+    tt.setStyle(TableStyle([
+        ("FONTNAME", (0,0), (-1,1), "Helvetica"),
+        ("FONTNAME", (0,2), (-1,2), "Helvetica-Bold"),
+        ("FONTSIZE", (0,0), (-1,-1), 9),
+        ("FONTSIZE", (0,2), (-1,2), 13),
+        ("TEXTCOLOR", (0,0), (-1,-1), azul_oscuro),
+        ("ALIGN", (1,0), (1,-1), "RIGHT"),
+        ("TOPPADDING", (0,0), (-1,-1), 2.5*mm),
+        ("BOTTOMPADDING", (0,0), (-1,-1), 2.5*mm),
+        ("LINEABOVE", (0,2), (-1,2), 1.5, azul),
+        ("BACKGROUND", (0,2), (-1,2), colors.HexColor("#EFF6FF")),
+        ("LEFTPADDING", (0,0), (-1,-1), 3*mm),
+        ("RIGHTPADDING", (0,0), (-1,-1), 3*mm),
+    ]))
+    story += [tt, Spacer(1, 12*mm)]
 
-        pdf.drawString(
-            50,
-            y,
-            nombre
-        )
+    story.append(Paragraph(
+        "Gracias por confiar en TechStore. Conserve esta factura como comprobante de su compra.",
+        ParagraphStyle("Gracias", parent=subtitulo, alignment=TA_CENTER, fontSize=8.5)
+    ))
 
-        pdf.drawString(
-            300,
-            y,
-            str(detalle.cantidad)
-        )
+    def pie_pagina(canvas_obj, doc_obj):
+        canvas_obj.saveState()
+        canvas_obj.setStrokeColor(borde)
+        canvas_obj.line(16*mm, 12*mm, 194*mm, 12*mm)
+        canvas_obj.setFont("Helvetica", 7.5)
+        canvas_obj.setFillColor(gris)
+        canvas_obj.drawString(16*mm, 8*mm, "TechStore · Factura electrónica de referencia")
+        canvas_obj.drawRightString(194*mm, 8*mm, f"Página {doc_obj.page}")
+        canvas_obj.restoreState()
 
-        pdf.drawString(
-            370,
-            y,
-            f"${detalle.precio_unitario:.2f}"
-        )
-
-        pdf.drawString(
-            450,
-            y,
-            f"${detalle.subtotal:.2f}"
-        )
-
-        y -= 18
-
-        if y < 100:
-
-            pdf.showPage()
-
-            y = alto - 50
-
-
-    # TOTALES
-
-    y -= 15
-
-    pdf.setFont(
-        "Helvetica-Bold",
-        10
-    )
-
-    pdf.drawString(
-        350,
-        y,
-        "Subtotal:"
-    )
-
-    pdf.drawString(
-        450,
-        y,
-        f"${factura.subtotal:.2f}"
-    )
-
-    y -= 18
-
-    pdf.drawString(
-        350,
-        y,
-        "IVA 15%:"
-    )
-
-    pdf.drawString(
-        450,
-        y,
-        f"${factura.impuestos:.2f}"
-    )
-
-    y -= 20
-
-    pdf.setFont(
-        "Helvetica-Bold",
-        12
-    )
-
-    pdf.drawString(
-        350,
-        y,
-        "TOTAL:"
-    )
-
-    pdf.drawString(
-        450,
-        y,
-        f"${factura.total:.2f}"
-    )
-
-    y -= 40
-
-    pdf.setFont(
-        "Helvetica",
-        9
-    )
-
-    pdf.drawString(
-        50,
-        y,
-        "Gracias por su compra."
-    )
-
-    pdf.save()
+    doc.build(story, onFirstPage=pie_pagina, onLaterPages=pie_pagina)
 
     buffer.seek(0)
 
@@ -1430,12 +1791,13 @@ def factura_pdf(factura_id):
         buffer,
         mimetype="application/pdf",
         as_attachment=True,
-        download_name=(
-            f"{factura.numero_factura}.pdf"
-        )
+        download_name=f"{factura.numero_factura}.pdf"
     )
 
 
+# =========================================================
+# EJECUTAR
+# =========================================================
 
 if __name__ == "__main__":
 

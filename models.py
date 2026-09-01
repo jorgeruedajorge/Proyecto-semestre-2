@@ -7,8 +7,9 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 
+# =========================================================
 # ROLES
-
+# =========================================================
 
 class RolUsuario(db.Model):
     __tablename__ = "rolesusuario"
@@ -32,8 +33,9 @@ class RolUsuario(db.Model):
         return f"<RolUsuario {self.nombre}>"
 
 
+# =========================================================
 # USUARIOS
-
+# =========================================================
 
 class Usuario(db.Model):
     __tablename__ = "usuarios"
@@ -51,6 +53,12 @@ class Usuario(db.Model):
     correo = db.Column(
         db.String(100),
         nullable=False
+    )
+
+    # Cédula ecuatoriana de 10 dígitos. Se solicita en el checkout.
+    cedula = db.Column(
+        db.String(10),
+        nullable=True
     )
 
     password = db.Column(
@@ -105,8 +113,9 @@ class Usuario(db.Model):
         return f"<Usuario {self.correo}>"
 
 
+# =========================================================
 # CATEGORÍAS
-
+# =========================================================
 
 class CategoriaProducto(db.Model):
     __tablename__ = "categoriaproducto"
@@ -130,9 +139,9 @@ class CategoriaProducto(db.Model):
         return f"<Categoria {self.nombre}>"
 
 
-
+# =========================================================
 # MARCAS
-
+# =========================================================
 
 class Marca(db.Model):
     __tablename__ = "marcas"
@@ -156,8 +165,9 @@ class Marca(db.Model):
         return f"<Marca {self.nombre}>"
 
 
+# =========================================================
 # PRODUCTOS
-
+# =========================================================
 
 class Producto(db.Model):
     __tablename__ = "productos"
@@ -214,7 +224,7 @@ class Producto(db.Model):
     )
 
     # Ruta/URL de la imagen de referencia del producto.
-    
+    # Se almacena la ruta relativa y no el archivo binario dentro de PostgreSQL.
     imagen_url = db.Column(
         db.String(255),
         nullable=True
@@ -278,6 +288,9 @@ class Producto(db.Model):
         )
 
 
+# =========================================================
+# PRODUCTO FÍSICO
+# =========================================================
 
 class ProductoFisico(Producto):
 
@@ -324,6 +337,9 @@ class ProductoFisico(Producto):
         return "Producto físico"
 
 
+# =========================================================
+# PRODUCTO DIGITAL
+# =========================================================
 
 class ProductoDigital(Producto):
 
@@ -357,7 +373,9 @@ class ProductoDigital(Producto):
         return "Producto digital"
 
 
-
+# =========================================================
+# PRODUCTO PERECIBLE
+# =========================================================
 
 class ProductoPerecible(Producto):
 
@@ -395,7 +413,9 @@ class ProductoPerecible(Producto):
         return "Producto perecible"
 
 
-
+# =========================================================
+# CARRITO
+# =========================================================
 
 class Carrito(db.Model):
     __tablename__ = "carrito"
@@ -443,6 +463,9 @@ class Carrito(db.Model):
         )
 
 
+# =========================================================
+# ESTADOS DEL PEDIDO
+# =========================================================
 
 class EstadoPedido(db.Model):
     __tablename__ = "estadospedido"
@@ -463,6 +486,9 @@ class EstadoPedido(db.Model):
     )
 
 
+# =========================================================
+# PEDIDOS
+# =========================================================
 
 class Pedido(db.Model):
     __tablename__ = "pedidos"
@@ -527,6 +553,9 @@ class Pedido(db.Model):
     )
 
 
+# =========================================================
+# DETALLE DEL PEDIDO
+# =========================================================
 
 class DetallePedido(db.Model):
     __tablename__ = "detalledespedidos"
@@ -573,6 +602,9 @@ class DetallePedido(db.Model):
     )
 
 
+# =========================================================
+# MÉTODOS DE PAGO
+# =========================================================
 
 class MetodoPago(db.Model):
     __tablename__ = "metodospago"
@@ -593,6 +625,9 @@ class MetodoPago(db.Model):
     )
 
 
+# =========================================================
+# PAGOS
+# =========================================================
 
 class Pago(db.Model):
     __tablename__ = "pagos"
@@ -639,6 +674,9 @@ class Pago(db.Model):
     )
 
 
+# =========================================================
+# FACTURA CABECERA
+# =========================================================
 
 class FacturaCabecera(db.Model):
     __tablename__ = "facturacabecera"
@@ -707,6 +745,9 @@ class FacturaCabecera(db.Model):
     )
 
 
+# =========================================================
+# FACTURA DETALLE
+# =========================================================
 
 class FacturaDetalle(db.Model):
     __tablename__ = "facturadetalle"

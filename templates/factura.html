@@ -1,37 +1,81 @@
 {% extends "base.html" %}
 {% block title %}Factura {{ factura.numero_factura }} - TechStore{% endblock %}
 {% block content %}
-<section class="factura-page"><div class="factura-card">
-<div class="factura-head"><div><span class="ts-eyebrow">⚡ TechStore · tecnología</span><h1 class="ts-glow">⚡ TechStore</h1><div>FACTURA DE VENTA</div></div><div class="factura-meta"><strong>{{ factura.numero_factura }}</strong><br>{{ factura.fecha.strftime('%d/%m/%Y %H:%M') }}</div></div>
-<div class="factura-body"><div class="cliente"><div><strong>Cliente</strong><br>{{ factura.usuario.nombre }}<br>{{ factura.usuario.correo }}</div><div><strong>Estado</strong><br>✓ PAGADO</div></div>
-<table class="factura-table"><thead><tr><th>Producto</th><th>Cant.</th><th>Precio</th><th>Subtotal</th></tr></thead><tbody>{% for detalle in factura.detalles %}<tr><td><div class="factura-producto"><img class="factura-thumb" src="{% if detalle.producto.imagen_url %}
-{{ url_for('static', filename=detalle.producto.imagen_url) }}
-{% elif 'fury' in detalle.producto.nombre|lower %}
-{{ url_for('static', filename='img/fury.webp') }}
-{% elif 'hyper' in detalle.producto.nombre|lower %}
-{{ url_for('static', filename='img/hyper.jpg') }}
-{% elif 'lenovo' in detalle.producto.nombre|lower %}
-{{ url_for('static', filename='img/lenovo.jpg') }}
-{% elif 'cable' in detalle.producto.nombre|lower and 'logitech' in detalle.producto.nombre|lower %}
-{{ url_for('static', filename='img/logitech cable.webp') }}
-{% elif 'logitech' in detalle.producto.nombre|lower %}
-{{ url_for('static', filename='img/logitech.webp') }}
-{% elif 'microsoft' in detalle.producto.nombre|lower %}
-{{ url_for('static', filename='img/microsoft.webp') }}
-{% elif 'nv2' in detalle.producto.nombre|lower %}
-{{ url_for('static', filename='img/nv2.webp') }}
-{% elif 'nvidia' in detalle.producto.nombre|lower %}
-{{ url_for('static', filename='img/nvidia.jpg') }}
-{% elif 'tuf' in detalle.producto.nombre|lower %}
-{{ url_for('static', filename='img/tuf.png') }}
-{% elif 'vivobook' in detalle.producto.nombre|lower %}
-{{ url_for('static', filename='img/vivobook.webp') }}
-{% elif 'windows' in detalle.producto.nombre|lower %}
-{{ url_for('static', filename='img/windows.avif') }}
-{% else %}
-{{ url_for('static', filename='img/fury.webp') }}
-{% endif %}" alt="{{ detalle.producto.nombre }}"><span>{{ detalle.producto.nombre }}</span></div></td><td>{{ detalle.cantidad }}</td><td>${{ "%.2f"|format(detalle.precio_unitario) }}</td><td>${{ "%.2f"|format(detalle.subtotal) }}</td></tr>{% endfor %}</tbody></table>
-<div class="totales"><div class="total-row"><span>Subtotal</span><strong>${{ "%.2f"|format(factura.subtotal) }}</strong></div><div class="total-row"><span>IVA 15%</span><strong>${{ "%.2f"|format(factura.impuestos) }}</strong></div><div class="total-row final"><span>Total</span><strong>${{ "%.2f"|format(factura.total) }}</strong></div></div>
-</div><div class="acciones-factura"><a class="btn-factura" href="{{ url_for('factura_pdf', factura_id=factura.id_factura) }}">⬇️ Descargar PDF</a><a class="btn-factura btn-sec" href="{{ url_for('catalogo') }}">🛍️ Volver al catálogo</a></div>
-</div></section>
+<section class="factura-page">
+    <div class="factura-card">
+        <header class="factura-head">
+            <div>
+                <span class="ts-eyebrow">⚡ TechStore · tecnología</span>
+                <h1 class="ts-glow">TECHSTORE</h1>
+                <p>FACTURA DE VENTA</p>
+            </div>
+            <div class="factura-meta">
+                <span>N.º DE FACTURA</span>
+                <strong>{{ factura.numero_factura }}</strong>
+                <small>{{ factura.fecha.strftime('%d/%m/%Y %H:%M') }}</small>
+                <b>✓ PAGADO</b>
+            </div>
+        </header>
+
+        <div class="factura-body">
+            <div class="factura-info-grid">
+                <div class="factura-info-box">
+                    <span>CLIENTE</span>
+                    <strong>{{ factura.usuario.nombre }}</strong>
+                    <p>Cédula: {{ factura.usuario.cedula or 'No registrada' }}</p>
+                    <p>{{ factura.usuario.correo }}</p>
+                </div>
+                <div class="factura-info-box">
+                    <span>PAGO</span>
+                    <strong>Pedido #{{ factura.pedido_id }}</strong>
+                    <p>Método:
+                        {% if factura.pedido and factura.pedido.pagos %}
+                            {{ factura.pedido.pagos[0].metodo.nombre }}
+                        {% else %}No registrado{% endif %}
+                    </p>
+                    <p>Estado: Pagado</p>
+                </div>
+            </div>
+
+            <div class="factura-table-wrap">
+                <table class="factura-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cant.</th>
+                            <th>Precio unit.</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for detalle in factura.detalles %}
+                        <tr>
+                            <td><strong>{{ detalle.producto.nombre }}</strong></td>
+                            <td>{{ detalle.cantidad }}</td>
+                            <td>${{ "%.2f"|format(detalle.precio_unitario) }}</td>
+                            <td><strong>${{ "%.2f"|format(detalle.subtotal) }}</strong></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="factura-totales">
+                <div><span>Subtotal</span><strong>${{ "%.2f"|format(factura.subtotal) }}</strong></div>
+                <div><span>IVA 15%</span><strong>${{ "%.2f"|format(factura.impuestos) }}</strong></div>
+                <div class="factura-total"><span>TOTAL</span><strong>${{ "%.2f"|format(factura.total) }}</strong></div>
+            </div>
+
+            <div class="factura-gracias">
+                <strong>Gracias por confiar en TechStore.</strong>
+                <span>Conserve esta factura como comprobante de su compra.</span>
+            </div>
+        </div>
+
+        <div class="acciones-factura">
+            <a class="btn-factura" href="{{ url_for('factura_pdf', factura_id=factura.id_factura) }}">⬇️ Descargar factura PDF</a>
+            <a class="btn-factura btn-sec" href="{{ url_for('catalogo') }}">🛍️ Volver al catálogo</a>
+        </div>
+    </div>
+</section>
 {% endblock %}

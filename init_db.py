@@ -32,6 +32,10 @@ with app.app_context():
     print("Creando tablas...")
     db.create_all()
 
+    # =====================================================
+    # ROLES
+    # =====================================================
+
     rol_admin = RolUsuario(
         nombre="Administrador"
     )
@@ -48,6 +52,9 @@ with app.app_context():
     db.session.commit()
 
 
+    # =====================================================
+    # USUARIO ADMINISTRADOR
+    # =====================================================
 
     admin = Usuario(
         nombre="Administrador",
@@ -58,6 +65,10 @@ with app.app_context():
     db.session.add(admin)
     db.session.commit()
 
+
+    # =====================================================
+    # CATEGORÍAS
+    # =====================================================
 
     laptops = CategoriaProducto(
         nombre="Laptops"
@@ -84,6 +95,10 @@ with app.app_context():
 
     db.session.commit()
 
+
+    # =====================================================
+    # MARCAS
+    # =====================================================
 
     asus = Marca(
         nombre="ASUS"
@@ -126,6 +141,9 @@ with app.app_context():
     db.session.commit()
 
 
+    # =====================================================
+    # ESTADOS DE PEDIDO
+    # =====================================================
 
     pendiente = EstadoPedido(
         nombre="Pendiente"
@@ -158,6 +176,9 @@ with app.app_context():
     db.session.commit()
 
 
+    # =====================================================
+    # MÉTODOS DE PAGO
+    # =====================================================
 
     tarjeta = MetodoPago(
         nombre="Tarjeta"
@@ -179,7 +200,14 @@ with app.app_context():
 
     db.session.commit()
 
+
+    # =====================================================
     # PRODUCTOS TECNOLÓGICOS
+    # =====================================================
+
+    # =====================================================
+    # LAPTOPS
+    # =====================================================
 
     laptop_asus = ProductoFisico(
         tipo="fisico",
@@ -232,7 +260,10 @@ with app.app_context():
         imagen_url="img/vivobook.webp"
     )
 
+
+    # =====================================================
     # COMPONENTES
+    # =====================================================
 
     tarjeta_grafica = ProductoFisico(
         tipo="fisico",
@@ -286,9 +317,9 @@ with app.app_context():
     )
 
 
-
+    # =====================================================
     # ACCESORIOS
-
+    # =====================================================
 
     mouse = ProductoFisico(
         tipo="fisico",
@@ -341,8 +372,10 @@ with app.app_context():
         imagen_url="img/hyper.jpg"
     )
 
+
+    # =====================================================
     # SOFTWARE
-  
+    # =====================================================
 
     office = ProductoDigital(
         tipo="digital",
@@ -377,8 +410,9 @@ with app.app_context():
     )
 
 
+    # =====================================================
     # GUARDAR PRODUCTOS
-
+    # =====================================================
 
     db.session.add_all([
         laptop_asus,
@@ -397,9 +431,9 @@ with app.app_context():
     db.session.commit()
 
 
-
+    # =====================================================
     # RESULTADO
-
+    # =====================================================
 
     print()
     print("==============================================")
