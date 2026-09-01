@@ -373,45 +373,6 @@ class ProductoDigital(Producto):
         return "Producto digital"
 
 
-# =========================================================
-# PRODUCTO PERECIBLE
-# =========================================================
-
-class ProductoPerecible(Producto):
-
-    __tablename__ = "productos_perecibles"
-
-    id_producto = db.Column(
-        db.Integer,
-        db.ForeignKey(
-            "productos.id_producto"
-        ),
-        primary_key=True
-    )
-
-    dias_para_vencer = db.Column(
-        db.Integer,
-        nullable=False
-    )
-
-    __mapper_args__ = {
-        "polymorphic_identity": "perecible",
-        "polymorphic_load": "inline"
-    }
-
-    def esta_por_vencer(self):
-        return self.dias_para_vencer <= 3
-
-    def precio_final(self):
-
-        if self.esta_por_vencer():
-            return self.precio * Decimal("0.90")
-
-        return self.precio
-
-    def descripcion_tipo(self):
-        return "Producto perecible"
-
 
 # =========================================================
 # CARRITO

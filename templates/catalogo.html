@@ -4,7 +4,7 @@
 <section class="hero">
   <div class="hero-contenido">
     <span class="etiqueta">TECNOLOGÍA PARA TODOS</span>
-    <span class="ts-eyebrow">⚡ TechStore · tecnología</span><h1 class="ts-glow">Todo lo que necesitas <span>en tecnología.</span></h1>
+    <span class="ts-eyebrow"> TechStore · tecnología</span><h1 class="ts-glow">Todo lo que necesitas <span>en tecnología.</span></h1>
     <p>Encuentra laptops, componentes, accesorios y software en un solo lugar.</p>
     <a href="#productos" class="btn-principal">Explorar productos</a>
   </div>
@@ -14,11 +14,11 @@
 <section id="categorias" class="categorias">
   <div class="section-header"><div><span class="subtitulo">EXPLORA</span><h2>Categorías</h2></div></div>
   <div class="categorias-grid">
-    <a href="{{ url_for('catalogo') }}" class="categoria-card"><div class="categoria-icono">🛍️</div><h3>Todos</h3><p>Ver todo el catálogo</p></a>
+    <a href="{{ url_for('catalogo') }}" class="categoria-card"><div class="categoria-icono"></div><h3>Todos</h3><p>Ver todo el catálogo</p></a>
     {% for categoria in categorias %}
     <a href="{{ url_for('catalogo', categoria=categoria.id_categoria) }}" class="categoria-card">
       <div class="categoria-icono">
-        {% if categoria.nombre == "Laptops" %}💻{% elif categoria.nombre == "Componentes" %}⌨️{% elif categoria.nombre == "Accesorios" %}🖱️{% else %}💿{% endif %}
+        {% if categoria.nombre == "Laptops" %}{% elif categoria.nombre == "Componentes" %}{% elif categoria.nombre == "Accesorios" %}{% else %}{% endif %}
       </div><h3>{{ categoria.nombre }}</h3><p>Ver productos</p>
     </a>
     {% endfor %}
@@ -76,7 +76,7 @@
         </div>
         {% if session.get('usuario_id') and session.get('es_admin') %}
         <div class="admin-actions">
-          <a class="btn-admin" href="{{ url_for('editar_producto', producto_id=producto.id_producto) }}">✏️ Editar</a>
+          <a class="btn-admin" href="{{ url_for('editar_producto', producto_id=producto.id_producto) }}"> Editar</a>
           <form method="POST" action="{{ url_for('eliminar_producto', producto_id=producto.id_producto) }}" onsubmit="return confirm('¿Eliminar este producto?')"><button class="btn-admin btn-danger">🗑️ Eliminar</button></form>
         </div>
         {% endif %}
@@ -84,6 +84,6 @@
     </article>
     {% endfor %}
   </div>
-  {% else %}<div class="sin-productos"><div>📦</div><h3>No hay productos en esta categoría</h3><a href="{{ url_for('catalogo') }}" class="btn-principal">Ver todo el catálogo</a></div>{% endif %}
+  {% else %}<div class="sin-productos"><div></div><h3>No hay productos en esta categoría</h3><a href="{{ url_for('catalogo') }}" class="btn-principal">Ver todo el catálogo</a></div>{% endif %}
 </section>
 {% endblock %}

@@ -727,6 +727,14 @@ def checkout():
             session["carrito"] = {}
             session.modified = True
 
+            # Confirmación visual de la compra
+            flash(
+                f"¡Compra realizada con éxito! "
+                f"Tu pedido #{pedido.id_pedido} fue confirmado y "
+                f"la factura {factura.numero_factura} ha sido generada.",
+                "success"
+            )
+
             return redirect(
                 url_for(
                     "factura_pdf",

@@ -2,12 +2,12 @@
 {% block title %}Finalizar compra - TechStore{% endblock %}
 {% block content %}
 <section class="checkout">
-    <span class="ts-eyebrow">⚡ TechStore · tecnología</span>
-    <h1 class="ts-glow">💳 Finalizar compra</h1>
+    <span class="ts-eyebrow"> TechStore · tecnología</span>
+    <h1 class="ts-glow"> Finalizar compra</h1>
 
     <div class="checkout-contenedor">
         <div class="checkout-formulario">
-            <h2>🧑 Datos del cliente</h2>
+            <h2> Datos del cliente</h2>
             <p class="checkout-ayuda">Completa tus datos para generar correctamente la factura.</p>
 
             <form method="POST">
@@ -37,7 +37,7 @@
                 </div>
 
                 <div class="campo">
-                    <label for="metodo_pago">💳 Método de pago</label>
+                    <label for="metodo_pago"> Método de pago</label>
                     <select id="metodo_pago" name="metodo_pago" required>
                         <option value="">Seleccione un método de pago</option>
                         {% for metodo in metodos %}
@@ -51,7 +51,7 @@
         </div>
 
         <div class="checkout-resumen">
-            <h2>🧾 Resumen del pedido</h2>
+            <h2> Resumen del pedido</h2>
 
             {% for item in productos %}
             <div class="checkout-producto">

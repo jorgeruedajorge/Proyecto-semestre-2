@@ -258,18 +258,18 @@
     <div class="admin-header">
         <div>
             <span class="subtitulo">PANEL ADMINISTRATIVO</span>
-            <h1>📊 Centro de administración</h1>
+            <h1> Centro de administración</h1>
             <p>Inventario, ventas, reportes y gestión de productos de TechStore.</p>
         </div>
 
         <div class="admin-header-actions">
             <a class="btn-admin btn-primary"
                href="{{ url_for('dashboard_pdf') }}">
-                ⬇️ Descargar dashboard PDF
+                 Descargar dashboard PDF
             </a>
             <a class="btn-admin btn-primary"
                href="{{ url_for('nuevo_producto') }}">
-                ➕ Registrar producto
+                 Registrar producto
             </a>
         </div>
     </div>
@@ -280,16 +280,16 @@
     ====================================================== -->
 
     <nav class="admin-nav">
-        <a href="#dashboard">📊 Dashboard</a>
-        <a href="#inventario">📦 Inventario</a>
-        <a href="#stock-bajo">⚠️ Stock bajo</a>
-        <a href="#agotados">🚫 Agotados</a>
-        <a href="#ventas">💰 Ventas</a>
-        <a href="#resumen-ventas">📈 Resumen</a>
-        <a href="#detalle">🧾 Detalle</a>
-        <a href="#mas-vendidos">🏆 Más vendidos</a>
-        <a href="#categorias">📂 Categorías</a>
-        <a href="#productos">🛠️ Productos</a>
+        <a href="#dashboard"> Dashboard</a>
+        <a href="#inventario"> Inventario</a>
+        <a href="#stock-bajo"> Stock bajo</a>
+        <a href="#agotados"> Agotados</a>
+        <a href="#ventas"> Ventas</a>
+        <a href="#resumen-ventas"> Resumen</a>
+        <a href="#detalle"> Detalle</a>
+        <a href="#mas-vendidos"> Más vendidos</a>
+        <a href="#categorias"> Categorías</a>
+        <a href="#productos"> Productos</a>
     </nav>
 
 
@@ -349,7 +349,7 @@
 
         <div class="panel-title">
             <div>
-                <h2>📦 Inventario completo</h2>
+                <h2> Inventario completo</h2>
                 <p>Existencias actuales de todos los productos.</p>
             </div>
 
@@ -424,7 +424,7 @@
 
         <div class="panel-title">
             <div>
-                <h2>⚠️ Productos con stock bajo</h2>
+                <h2> Productos con stock bajo</h2>
                 <p>Productos con cinco unidades o menos.</p>
             </div>
 
@@ -493,7 +493,7 @@
 
         <div class="panel-title">
             <div>
-                <h2>🚫 Productos agotados</h2>
+                <h2> Productos agotados</h2>
                 <p>Productos cuyo stock actual es cero.</p>
             </div>
 
@@ -560,7 +560,7 @@
 
         <div class="panel-title">
             <div>
-                <h2>💰 Ventas / pedidos</h2>
+                <h2> Ventas / pedidos</h2>
                 <p>Pedidos registrados en el sistema.</p>
             </div>
 
@@ -631,7 +631,7 @@
 
         <div class="panel-title">
             <div>
-                <h2>📈 Resumen de ventas</h2>
+                <h2> Resumen de ventas</h2>
                 <p>Ventas agrupadas por fecha.</p>
             </div>
 
@@ -692,7 +692,7 @@
 
         <div class="panel-title">
             <div>
-                <h2>🧾 Detalle de ventas</h2>
+                <h2> Detalle de ventas</h2>
                 <p>Productos incluidos en cada pedido.</p>
             </div>
 
@@ -764,7 +764,7 @@
 
         <div class="panel-title">
             <div>
-                <h2>🏆 Productos más vendidos</h2>
+                <h2> Productos más vendidos</h2>
                 <p>Ranking de productos vendidos en pedidos pagados.</p>
             </div>
 
@@ -829,7 +829,7 @@
 
         <div class="panel-title">
             <div>
-                <h2>📂 Inventario por categoría</h2>
+                <h2> Inventario por categoría</h2>
                 <p>Distribución del inventario según categoría.</p>
             </div>
 
@@ -891,17 +891,17 @@
         <div class="panel-title">
 
             <div>
-                <h2>🛠️ Gestión de productos</h2>
+                <h2> Gestión de productos</h2>
                 <p>Crear, editar y eliminar productos.</p>
             </div>
 
             <a class="btn-admin btn-primary btn-pdf"
                href="{{ url_for('reporte_dashboard_pdf', reporte='productos') }}">
-                📄 PDF
+                 PDF
             </a>
             <a class="btn-admin btn-primary"
                href="{{ url_for('nuevo_producto') }}">
-                ➕ Nuevo producto
+                 Nuevo producto
             </a>
 
         </div>
@@ -940,7 +940,7 @@
 
                                 {% else %}
 
-                                <span>📦</span>
+                                <span></span>
 
                                 {% endif %}
 
@@ -970,7 +970,7 @@
                                     class="btn-admin btn-primary"
                                     href="{{ url_for('editar_producto', producto_id=producto.id_producto) }}"
                                 >
-                                    ✏️ Editar
+                                     Editar
                                 </a>
 
                                 <form
@@ -983,7 +983,7 @@
                                         type="submit"
                                         class="btn-admin btn-danger"
                                     >
-                                        🗑️ Eliminar
+                                         Eliminar
                                     </button>
 
                                 </form>

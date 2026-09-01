@@ -368,16 +368,6 @@ p {
     border-color: rgba(34, 211, 238, .38);
 }
 
-.categoria-icono {
-    display: grid;
-    place-items: center;
-    width: 58px;
-    height: 58px;
-    margin: auto;
-    border-radius: 16px;
-    background: rgba(34, 211, 238, .08);
-    font-size: 27px;
-}
 
 .categoria-card h3 {
     margin: 15px 0 6px;
@@ -1026,6 +1016,29 @@ small,
     background: rgba(59, 130, 246, .12);
     border: 1px solid rgba(59, 130, 246, .25);
     border-radius: 12px;
+}
+
+.flash.success {
+    color: #bbf7d0;
+    background:
+        linear-gradient(135deg, rgba(34, 197, 94, .14), rgba(34, 211, 238, .08));
+    border-color: rgba(34, 197, 94, .35);
+    box-shadow: 0 10px 30px rgba(34, 197, 94, .10);
+}
+
+.flash.success::before {
+    content: "✓";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin-right: 9px;
+    border-radius: 50%;
+    color: #052e16;
+    background: #4ade80;
+    font-weight: 950;
+    vertical-align: -4px;
 }
 
 /* =========================================================
